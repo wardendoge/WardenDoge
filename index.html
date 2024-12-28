@@ -26,7 +26,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            object-fit: cover; /* Görsel ekraný tam kaplar */
+            object-fit: cover;
         }
         #start-button {
             position: absolute;
@@ -43,15 +43,8 @@
             opacity: 0;
             transition: opacity 1s ease-in-out;
         }
-        button:hover {
-            background-color: rgba(0, 0, 0, 0.9);
-        }
-        #home-page, #content {
-            display: none;
-            padding: 20px;
-        }
         button {
-            margin: 5px;
+            margin: 10px;
             padding: 10px 20px;
             background-color: #000000;
             color: #ffeb3b;
@@ -84,13 +77,24 @@
         #click-button:active {
             transform: scale(0.9);
         }
-        ul {
-            list-style: none;
-            padding: 0;
+        #effect-container {
+            position: relative;
+            height: 150px;
         }
-        li {
-            margin: 10px 0;
-            font-size: 18px;
+        .effect {
+            position: absolute;
+            font-size: 24px;
+            animation: pop 0.5s forwards;
+        }
+        @keyframes pop {
+            0% {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+            100% {
+                opacity: 0;
+                transform: scale(1.5) translateY(-50px);
+            }
         }
     </style>
 </head>
@@ -102,18 +106,19 @@
     </section>
 
     <!-- Home Page -->
-    <section id="home-page">
+    <section id="home-page" style="display: none;">
         <h1>Welcome to Home Page</h1>
         <button onclick="showPage('game')">Game</button>
         <button onclick="showPage('leaderboard')">Leader Board</button>
     </section>
 
     <!-- Dynamic Content -->
-    <section id="content"></section>
+    <section id="content" style="display: none;"></section>
 
     <script>
-        let score = parseInt(localStorage.getItem('score')) || 0;
+        let score = 0;
 
+        // Splash Screen to Home Page
         window.onload = function () {
             const startButton = document.getElementById('start-button');
             setTimeout(() => {
@@ -122,10 +127,8 @@
         };
 
         function showHome() {
-            const splash = document.getElementById('splash-screen');
-            const home = document.getElementById('home-page');
-            splash.style.display = 'none';
-            home.style.display = 'block';
+            document.getElementById('splash-screen').style.display = 'none';
+            document.getElementById('home-page').style.display = 'block';
         }
 
         function showPage(page) {
@@ -136,9 +139,10 @@
             if (page === 'game') {
                 content.innerHTML = `
                     <h2>Game Page</h2>
+                    <div id="effect-container"></div>
                     <button id="click-button" onclick="earnPoints()">Click Me</button>
-                    <p id="score-display" style="margin-top: 20px; font-size: 16px;">Score: ${score}</p>
-                    <button onclick="showHome()" style="margin-top: 20px;">Back to Home</button>
+                    <p id="score-display" style="margin-top: 20px;">Score: ${score}</p>
+                    <button onclick="showHome()">Back to Home</button>
                 `;
             } else if (page === 'leaderboard') {
                 content.innerHTML = `
@@ -148,7 +152,7 @@
                         <li>2. Player2 - 100 Points</li>
                         <li>3. Player3 - 80 Points</li>
                     </ul>
-                    <button onclick="showHome()" style="margin-top: 20px;">Back to Home</button>
+                    <button onclick="showHome()">Back to Home</button>
                 `;
             }
         }
@@ -156,7 +160,16 @@
         function earnPoints() {
             score += 1;
             document.getElementById('score-display').textContent = `Score: ${score}`;
-            localStorage.setItem('score', score);
+            const effectContainer = document.getElementById('effect-container');
+            const effect = document.createElement('div');
+            effect.textContent = '??';
+            effect.className = 'effect';
+            effect.style.left = Math.random() * 80 + '%';
+            effectContainer.appendChild(effect);
+
+            setTimeout(() => {
+                effect.remove();
+            }, 500); // Efekti kaldýr
         }
     </script>
 </body>
