@@ -21,7 +21,7 @@
             width: 100vw;
             height: 100vh;
             overflow: hidden;
-            background: #ffeb3b; /* Fallback arka plan */
+            background: #ffeb3b; /* Fallback sarý arka plan */
         }
         #splash-screen img {
             position: absolute;
@@ -44,7 +44,6 @@
             border-radius: 5px;
             cursor: pointer;
             opacity: 0;
-            z-index: 2;
             transition: opacity 1s ease-in-out;
         }
         #start-button:hover {
@@ -88,10 +87,6 @@
             transform: translate(-50%, -50%);
             cursor: pointer;
             transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-            outline: none;
-        }
-        .click-image:focus {
-            outline: none;
         }
         .click-image:active {
             animation: glow 0.3s ease-in-out forwards;
@@ -120,18 +115,50 @@
             color: black;
         }
 
-        #game-page button {
-            position: absolute;
-            bottom: 10%;
-            left: 50%;
-            transform: translateX(-50%);
-            padding: 10px 20px;
-            background-color: #000000;
-            color: #ffeb3b;
-            font-size: 16px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
+        /* Leaderboard */
+        ul {
+            list-style: none;
+            padding: 0;
+            margin: 20px auto;
+            width: 80%;
+            max-width: 500px;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            font-size: 18px;
+            border-bottom: 1px solid #ddd;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        li:last-child {
+            border-bottom: none;
+        }
+        li:nth-child(1) {
+            color: gold;
+            font-weight: bold;
+        }
+        li:nth-child(2) {
+            color: silver;
+            font-weight: bold;
+        }
+        li:nth-child(3) {
+            color: #cd7f32; /* Bronz renk */
+            font-weight: bold;
+        }
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
     </style>
 </head>
@@ -154,6 +181,13 @@
 
     <script>
         let score = 0;
+        const leaderboardData = [
+            { username: 'Player1', score: 120 },
+            { username: 'Player2', score: 100 },
+            { username: 'Player3', score: 80 },
+            { username: 'Player4', score: 70 },
+            { username: 'Player5', score: 60 },
+        ];
 
         // Splash Screen to Home Page
         window.onload = function () {
@@ -168,10 +202,9 @@
             const home = document.getElementById('home-page');
             const content = document.getElementById('content');
 
-            // Sayfalarý sýfýrla
             splash.style.display = 'none';
             content.style.display = 'none';
-            content.innerHTML = '';
+            content.innerHTML = ''; // Ýçeriði temizle
             home.style.display = 'block';
         }
 
@@ -189,13 +222,18 @@
                     </div>
                 `;
             } else if (page === 'leaderboard') {
+                const leaderboardHTML = leaderboardData
+                    .map((player, index) => {
+                        const medal = index === 0 ? '??' : index === 1 ? '??' : index === 2 ? '??' : '';
+                        return `<li>
+                                    <span>${medal} ${player.username}</span>
+                                    <span>${player.score} Points</span>
+                                </li>`;
+                    })
+                    .join('');
                 content.innerHTML = `
                     <h2>Leader Board</h2>
-                    <ul>
-                        <li>1. Umut - 120 Points</li>
-                        <li>2. Kursat - 100 Points</li>
-                        <li>3. Emre - 80 Points</li>
-                    </ul>
+                    <ul>${leaderboardHTML}</ul>
                     <button onclick="showHome()">Back to Home</button>
                 `;
             }
