@@ -14,11 +14,14 @@
             color: #000000;
             text-align: center;
         }
+
+        /* Splash Screen */
         #splash-screen {
             position: relative;
             width: 100vw;
             height: 100vh;
             overflow: hidden;
+            background: #ffeb3b; /* Fallback arka plan */
         }
         #splash-screen img {
             position: absolute;
@@ -41,34 +44,54 @@
             border-radius: 5px;
             cursor: pointer;
             opacity: 0;
+            z-index: 2;
             transition: opacity 1s ease-in-out;
         }
-        button:hover {
+        #start-button:hover {
             background-color: rgba(0, 0, 0, 0.9);
         }
+
+        /* Home Page */
         #home-page, #content {
             display: none;
             padding: 20px;
         }
+        #home-page button {
+            margin: 10px;
+            padding: 10px 20px;
+            background-color: #000000;
+            color: #ffeb3b;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease-in-out;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+        }
+        #home-page button:hover {
+            box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Game Page */
         #game-page {
             width: 100vw;
             height: 100vh;
-            background: #ffeb3b; /* Düz sarý arka plan */
+            background: #ffeb3b; /* Sarý arka plan */
             position: relative;
         }
         .click-image {
             position: absolute;
-            width: 200px; /* Köpek görselinin boyutu büyütüldü */
+            width: 200px;
             height: auto;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             cursor: pointer;
             transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-            outline: none; /* Tarayýcý mavi çerçevesini kaldýrýr */
+            outline: none;
         }
         .click-image:focus {
-            outline: none; /* Focus sýrasýnda mavi sýnýrý kaldýrýr */
+            outline: none;
         }
         .click-image:active {
             animation: glow 0.3s ease-in-out forwards;
@@ -87,12 +110,35 @@
                 box-shadow: 0 0 10px rgba(255, 200, 0, 0.4);
             }
         }
+
+        #score-display {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 24px;
+            color: black;
+        }
+
+        #game-page button {
+            position: absolute;
+            bottom: 10%;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 10px 20px;
+            background-color: #000000;
+            color: #ffeb3b;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
     <!-- Splash Screen -->
     <section id="splash-screen">
-        <img src="3.jpg" alt="Splash Image">
+        <img src="2.jpg" alt="Splash Image">
         <button id="start-button" onclick="showHome()">Start</button>
     </section>
 
@@ -125,8 +171,8 @@
             // Sayfalarý sýfýrla
             splash.style.display = 'none';
             content.style.display = 'none';
-            content.innerHTML = ''; // Ýçeriði temizle
-            home.style.display = 'block'; // Home Page görünür
+            content.innerHTML = '';
+            home.style.display = 'block';
         }
 
         function showPage(page) {
@@ -138,8 +184,8 @@
                 content.innerHTML = `
                     <div id="game-page">
                         <img src="3.png" alt="Dog" class="click-image" onclick="earnPoints()">
-                        <p id="score-display" style="position: absolute; top: 20px; left: 50%; transform: translateX(-50%); font-size: 24px; color: black;">Score: ${score}</p>
-                        <button onclick="showHome()" style="position: absolute; bottom: 10%; left: 50%; transform: translateX(-50%);">Back to Home</button>
+                        <p id="score-display">Score: ${score}</p>
+                        <button onclick="showHome()">Back to Home</button>
                     </div>
                 `;
             } else if (page === 'leaderboard') {
