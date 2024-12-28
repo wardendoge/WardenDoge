@@ -58,23 +58,33 @@
         }
         .click-image {
             position: absolute;
-            width: 150px;
+            width: 200px; /* Köpek görselinin boyutu büyütüldü */
             height: auto;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             cursor: pointer;
-            transition: transform 0.2s ease-in-out;
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            outline: none; /* Tarayýcý mavi çerçevesini kaldýrýr */
+        }
+        .click-image:focus {
+            outline: none; /* Focus sýrasýnda mavi sýnýrý kaldýrýr */
         }
         .click-image:active {
-            animation: grow-shrink 0.3s ease-in-out forwards;
+            animation: glow 0.3s ease-in-out forwards;
         }
-        @keyframes grow-shrink {
+        @keyframes glow {
+            0% {
+                transform: scale(1) translate(-50%, -50%);
+                box-shadow: 0 0 10px rgba(255, 200, 0, 0.4);
+            }
             50% {
-                transform: scale(1.2) translate(-50%, -50%);
+                transform: scale(1.5) translate(-50%, -50%);
+                box-shadow: 0 0 40px rgba(255, 255, 0, 1);
             }
             100% {
                 transform: scale(1) translate(-50%, -50%);
+                box-shadow: 0 0 10px rgba(255, 200, 0, 0.4);
             }
         }
     </style>
@@ -82,7 +92,7 @@
 <body>
     <!-- Splash Screen -->
     <section id="splash-screen">
-        <img src="2.jpg" alt="Splash Image">
+        <img src="3.jpg" alt="Splash Image">
         <button id="start-button" onclick="showHome()">Start</button>
     </section>
 
@@ -136,9 +146,9 @@
                 content.innerHTML = `
                     <h2>Leader Board</h2>
                     <ul>
-                        <li>1. Player1 - 120 Points</li>
-                        <li>2. Player2 - 100 Points</li>
-                        <li>3. Player3 - 80 Points</li>
+                        <li>1. Umut - 120 Points</li>
+                        <li>2. Kursat - 100 Points</li>
+                        <li>3. Emre - 80 Points</li>
                     </ul>
                     <button onclick="showHome()">Back to Home</button>
                 `;
