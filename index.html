@@ -87,6 +87,26 @@
             font-size: 20px;
             border-radius: 10px;
         }
+        #leaderboard {
+            padding: 20px;
+            max-height: 70vh;
+            overflow-y: auto;
+            text-align: left;
+            font-size: 18px;
+        }
+        .leaderboard-entry {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+        }
+        .username {
+            color: black;
+            font-weight: normal;
+        }
+        .score {
+            color: darkgreen;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -186,11 +206,9 @@
             // Stop spawning HeimDoge after game ends
             clearInterval(spawnTimer);
 
-            const date = new Date().toLocaleString("tr-TR", { hour12: false });
             const gameData = {
                 username,
-                score,
-                date
+                score
             };
 
             // Save to localStorage
@@ -203,7 +221,6 @@
             document.getElementById('game-over-screen').innerHTML = `
                 <h2>Game Over!</h2>
                 <p>Your Score: ${score}</p>
-                <p>Date: ${date}</p>
                 <button id="leaderboard-button" onclick="showLeaderboard()">Leaderboard</button>
             `;
         }
@@ -215,12 +232,18 @@
 
             const leaderboard = scores.slice(0, 10); // Get top 10 players
 
-            let leaderboardHtml = "<h3>Leaderboard</h3>";
+            let leaderboardHtml = "<div id='leaderboard'><h3>Leaderboard</h3>";
             leaderboard.forEach((entry, index) => {
-                leaderboardHtml += `<p>${index + 1}. ${entry.username} - Score: ${entry.score} - Date: ${entry.date}</p>`;
+                leaderboardHtml += `
+                    <div class="leaderboard-entry">
+                        <span class="username">${entry.username}</span>
+                        <span class="score">${entry.score}</span>
+                    </div>
+                `;
             });
 
-            document.getElementById('game-over-screen').innerHTML = leaderboardHtml + `<button onclick="restartGame()">Play Again</button>`;
+            leaderboardHtml += `<button onclick="restartGame()">Play Again</button></div>`;
+            document.getElementById('game-over-screen').innerHTML = leaderboardHtml;
         }
 
         // Restart the game (after viewing leaderboard)
