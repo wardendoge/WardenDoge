@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title></title>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Montserrat', Arial, sans-serif;
@@ -59,6 +58,17 @@
             border-radius: 5px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
+        #timer-display {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 24px;
+            color: black;
+            background: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
         #game-over-screen {
             position: absolute;
             top: 50%;
@@ -68,13 +78,21 @@
             font-size: 24px;
             color: black;
         }
+        #leaderboard-button {
+            background: black;
+            color: #ffeb3b;
+            border: none;
+            padding: 15px 30px;
+            cursor: pointer;
+            font-size: 20px;
+            border-radius: 10px;
+        }
     </style>
 </head>
 <body>
     <!-- Splash Screen (Kullanýcý adý giriþi) -->
     <div id="splash-screen">
         <div>
-            <h1>Catch the HeimDoge</h1>
             <input type="text" id="username-input" placeholder="Enter your username" />
             <button id="start-button" onclick="startGame()">Start</button>
         </div>
@@ -83,6 +101,7 @@
     <!-- Game Container -->
     <div id="game-container">
         <div id="score-display">Score: 0</div>
+        <div id="timer-display">Time: 20</div>
         <div id="game-over-screen" style="display: none;"></div>
     </div>
 
@@ -116,19 +135,10 @@
             gameTimer = setTimeout(endGame, gameDuration);
 
             // Displaying the game timer
-            const timerDisplay = document.createElement('div');
-            timerDisplay.id = 'timer-display';
-            timerDisplay.style.position = 'absolute';
-            timerDisplay.style.top = '50px';
-            timerDisplay.style.left = '10px';
-            timerDisplay.style.fontSize = '20px';
-            timerDisplay.style.color = 'black';
-            gameContainer.appendChild(timerDisplay);
-
             let remainingTime = gameDuration / 1000;
             const countdownTimer = setInterval(() => {
                 remainingTime--;
-                timerDisplay.textContent = `Time: ${remainingTime}s`;
+                document.getElementById('timer-display').textContent = `Time: ${remainingTime}s`;
 
                 if (remainingTime <= 0) {
                     clearInterval(countdownTimer);
@@ -176,7 +186,7 @@
             // Stop spawning HeimDoge after game ends
             clearInterval(spawnTimer);
 
-            const date = new Date().toLocaleString("tr-TR");
+            const date = new Date().toLocaleString("tr-TR", { hour12: false });
             const gameData = {
                 username,
                 score,
@@ -194,8 +204,23 @@
                 <h2>Game Over!</h2>
                 <p>Your Score: ${score}</p>
                 <p>Date: ${date}</p>
-                <button onclick="restartGame()">Play Again</button>
+                <button id="leaderboard-button" onclick="showLeaderboard()">Leaderboard</button>
             `;
+        }
+
+        // Show Leaderboard
+        function showLeaderboard() {
+            const scores = JSON.parse(localStorage.getItem("heimdogeScores")) || [];
+            scores.sort((a, b) => b.score - a.score); // Sort by score, descending
+
+            const leaderboard = scores.slice(0, 10); // Get top 10 players
+
+            let leaderboardHtml = "<h3>Leaderboard</h3>";
+            leaderboard.forEach((entry, index) => {
+                leaderboardHtml += `<p>${index + 1}. ${entry.username} - Score: ${entry.score} - Date: ${entry.date}</p>`;
+            });
+
+            document.getElementById('game-over-screen').innerHTML = leaderboardHtml + `<button onclick="restartGame()">Play Again</button>`;
         }
 
         // Restart the game (after viewing leaderboard)
