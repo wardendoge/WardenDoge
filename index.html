@@ -19,7 +19,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background: url('splash-image.jpg') no-repeat center center/cover;
+            background: url('2.jpg') no-repeat center center/cover;
         }
         #start-button {
             padding: 15px 30px;
@@ -189,7 +189,7 @@
         // Spawn a HeimDoge at a random position
         function spawnHeimdoge(container) {
             const heimdoge = document.createElement('img');
-            heimdoge.src = 'heimdoge.png'; // Replace with your HeimDoge image URL
+            heimdoge.src = '4.png'; // Replace with your HeimDoge image URL
             heimdoge.className = 'heimdoge';
 
             // Random position within the container
@@ -237,38 +237,27 @@
 
             // Show game over screen
             document.getElementById('game-over-screen').style.display = 'block';
-            document.getElementById('game-over-screen').innerHTML = `
-                <h2>Game Over!</h2>
-                <p>Your Score: ${score}</p>
-                <button id="leaderboard-button" onclick="showLeaderboard()">Leaderboard</button>
-            `;
+            document.getElementById('game-over-screen').innerHTML = `Game Over! Your Score: ${score}<br><button id="leaderboard-button" onclick="viewLeaderboard()">View Leaderboard</button>`;
+
+            // Stop game timer
+            clearTimeout(gameTimer);
         }
 
-        // Show Leaderboard
-        function showLeaderboard() {
-            const scoresRef = database.ref('scores');
-            scoresRef.once('value').then((snapshot) => {
-                const scores = snapshot.val() || {};
-                const leaderboard = Object.values(scores).sort((a, b) => b.score - a.score).slice(0, 5);
+        // View Leaderboard
+        function viewLeaderboard() {
+            const leaderboardRef = database.ref('scores');
+            leaderboardRef.orderByChild('score').limitToLast(5).once('value', snapshot => {
+                const leaderboard = snapshot.val();
+                let leaderboardHtml = '<h2>Leaderboard</h2>';
+                let entries = Object.values(leaderboard).sort((a, b) => b.score - a.score).slice(0, 5);
 
-                let leaderboardHtml = "<div id='leaderboard'><h3>Leaderboard</h3>";
-                leaderboard.forEach((entry) => {
-                    leaderboardHtml += `
-                        <div class="leaderboard-entry">
-                            <span class="username">${entry.username}</span>
-                            <span class="score">${entry.score}</span>
-                        </div>
-                    `;
+                entries.forEach(entry => {
+                    leaderboardHtml += `<div class="leaderboard-entry"><span class="username">${entry.username}</span><span class="score">${entry.score}</span></div>`;
                 });
 
-                leaderboardHtml += `<button onclick="restartGame()">Play Again</button></div>`;
+                // Show leaderboard
                 document.getElementById('game-over-screen').innerHTML = leaderboardHtml;
             });
-        }
-
-        // Restart the game
-        function restartGame() {
-            location.reload(); // Reload page to reset everything
         }
     </script>
 </body>
