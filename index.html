@@ -19,7 +19,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background: url('2.jpg') no-repeat center center/cover;
+            background: url('splash-image.jpg') no-repeat center center/cover;
         }
         #start-button {
             padding: 15px 30px;
@@ -126,19 +126,23 @@
         <div id="game-over-screen" style="display: none;"></div>
     </div>
 
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js"></script>
-    <script>
-        // Firebase Initialization
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js"></script>
+
+    <script type="module">
+        // Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyAU5gMvjzUp3sXMeaNXY4jzxKEacitwcC8",
             authDomain: "heimdogeapp.firebaseapp.com",
             databaseURL: "https://heimdogeapp-default-rtdb.europe-west1.firebasedatabase.app",
             projectId: "heimdogeapp",
-            storageBucket: "heimdogeapp.appspot.com",
+            storageBucket: "heimdogeapp.firebasestorage.app",
             messagingSenderId: "960562169006",
             appId: "1:960562169006:web:68014c8899636b7253d93f"
         };
+
+        // Initialize Firebase
         const app = firebase.initializeApp(firebaseConfig);
         const database = firebase.database(app);
 
@@ -153,7 +157,7 @@
 
         // Start the game
         function startGame() {
-            username = document.getElementById('username-input').value.trim(); // Ensure no extra spaces
+            username = document.getElementById('username-input').value;
             if (!username) {
                 alert("Username is required!");
                 return;
@@ -185,7 +189,7 @@
         // Spawn a HeimDoge at a random position
         function spawnHeimdoge(container) {
             const heimdoge = document.createElement('img');
-            heimdoge.src = '4.png'; // Replace with your HeimDoge image URL
+            heimdoge.src = 'heimdoge.png'; // Replace with your HeimDoge image URL
             heimdoge.className = 'heimdoge';
 
             // Random position within the container
@@ -227,7 +231,7 @@
                 score
             };
 
-            // Save to Firebase Realtime Database
+            // Save to Firebase
             const scoresRef = database.ref('scores');
             scoresRef.push(gameData);
 
@@ -243,10 +247,12 @@
         // Show Leaderboard
         function showLeaderboard() {
             const scoresRef = database.ref('scores');
-            scoresRef.orderByChild('score').limitToLast(5).once('value', (snapshot) => {
+            scoresRef.once('value').then((snapshot) => {
+                const scores = snapshot.val() || {};
+                const leaderboard = Object.values(scores).sort((a, b) => b.score - a.score).slice(0, 5);
+
                 let leaderboardHtml = "<div id='leaderboard'><h3>Leaderboard</h3>";
-                snapshot.forEach((childSnapshot) => {
-                    const entry = childSnapshot.val();
+                leaderboard.forEach((entry) => {
                     leaderboardHtml += `
                         <div class="leaderboard-entry">
                             <span class="username">${entry.username}</span>
@@ -260,12 +266,9 @@
             });
         }
 
-        // Restart the game (after viewing leaderboard)
+        // Restart the game
         function restartGame() {
-            document.getElementById('game-container').style.display = 'none';
-            document.getElementById('splash-screen').style.display = 'block';
-            document.getElementById('username-input').value = ''; // Clear username field
-            score = 0; // Reset score
+            location.reload(); // Reload page to reset everything
         }
     </script>
 </body>
