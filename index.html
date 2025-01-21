@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Catch the HeimDoge</title>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Montserrat', Arial, sans-serif;
@@ -150,9 +149,9 @@
         // Global Variables
         let score = 0;
         let username = '';
-        const spawnInterval = 300;
-        const disappearTime = 700;
-        const gameDuration = 20000;
+        const spawnInterval = 300; // Time between spawns (milliseconds)
+        const disappearTime = 700; // Time for HeimDoge to disappear (milliseconds)
+        const gameDuration = 20000; // Game duration in milliseconds (20 seconds)
         let gameTimer;
         let spawnTimer;
 
@@ -196,19 +195,23 @@
             heimdoge.src = '4.png'; // Replace with your HeimDoge image URL
             heimdoge.className = 'heimdoge';
 
-            const x = Math.random() * (container.offsetWidth - 50);
+            // Random position within the container
+            const x = Math.random() * (container.offsetWidth - 50); // Prevent overflow
             const y = Math.random() * (container.offsetHeight - 50);
             heimdoge.style.left = `${x}px`;
             heimdoge.style.top = `${y}px`;
 
+            // Add click event to increment score
             heimdoge.onclick = () => {
                 score++;
                 document.getElementById('score-display').textContent = `Score: ${score}`;
-                heimdoge.remove();
+                heimdoge.remove(); // Remove on click
             };
 
+            // Append to container
             container.appendChild(heimdoge);
 
+            // Remove after disappearTime
             setTimeout(() => {
                 if (heimdoge.parentElement) {
                     heimdoge.remove();
@@ -223,6 +226,7 @@
 
         // End the game and save the score
         function endGame() {
+            // Stop spawning HeimDoge after game ends
             clearInterval(spawnTimer);
 
             // Hide score and timer
@@ -234,10 +238,12 @@
                 score
             };
 
+            // Save to localStorage
             const scores = JSON.parse(localStorage.getItem("heimdogeScores")) || [];
             scores.push(gameData);
             localStorage.setItem("heimdogeScores", JSON.stringify(scores));
 
+            // Show game over screen
             document.getElementById('game-over-screen').style.display = 'block';
             document.getElementById('game-over-screen').innerHTML = `
                 <h2>Game Over!</h2>
@@ -279,12 +285,13 @@
             document.getElementById('game-over-screen').style.display = 'none';
             document.getElementById('game-container').style.display = 'none';
 
-            // Show the splash screen without asking for username if already exists
+            // Show the splash screen and automatically use saved username
             document.getElementById('splash-screen').style.display = 'block';
-            document.getElementById('username-input').value = localStorage.getItem('username') || ''; // Use saved username if exists
+            document.getElementById('username-input').value = localStorage.getItem('username') || ''; // Use saved username
             score = 0; // Reset score
-            document.getElementById('score-display').style.display = 'block';
-            document.getElementById('timer-display').style.display = 'block';
+
+            // Start the game immediately without asking for username
+            startGame();
         }
     </script>
 </body>
