@@ -98,6 +98,7 @@
             display: flex;
             justify-content: space-between;
             padding: 5px 0;
+            margin-right: 10px;
         }
         .username {
             color: black;
@@ -106,6 +107,7 @@
         .score {
             color: darkgreen;
             font-weight: bold;
+            margin-left: 15px; /* Boþluk ekleniyor */
         }
     </style>
 </head>
@@ -228,9 +230,17 @@
         // Show Leaderboard
         function showLeaderboard() {
             const scores = JSON.parse(localStorage.getItem("heimdogeScores")) || [];
-            scores.sort((a, b) => b.score - a.score); // Sort by score, descending
 
-            const leaderboard = scores.slice(0, 10); // Get top 10 players
+            // Kullanýcý bazýnda en yüksek puaný hesapla
+            const userScores = scores.reduce((acc, entry) => {
+                if (!acc[entry.username] || acc[entry.username].score < entry.score) {
+                    acc[entry.username] = entry;
+                }
+                return acc;
+            }, {});
+
+            // Tüm kullanýcýlarýn en yüksek skorlarýyla listeyi oluþtur
+            const leaderboard = Object.values(userScores).sort((a, b) => b.score - a.score); // Skora göre azalan sýralama
 
             let leaderboardHtml = "<div id='leaderboard'><h3>Leaderboard</h3>";
             leaderboard.forEach((entry, index) => {
