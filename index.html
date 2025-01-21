@@ -49,21 +49,6 @@
         #start-button:hover {
             transform: scale(1.1);
         }
-        #leaderboard-button {
-            background: black;
-            color: #ffeb3b;
-            border: none;
-            padding: 20px 50px;
-            cursor: pointer;
-            font-size: 18px;
-            border-radius: 10px;
-            margin-top: 20px;
-            display: block;
-            width: 100%;
-            max-width: 300px;
-            margin-left: auto;
-            margin-right: auto;
-        }
         #game-container {
             width: 100vw;
             height: 100vh;
@@ -136,7 +121,6 @@
     <div id="splash-screen">
         <input type="text" id="username-input" placeholder="Enter your username" />
         <button id="start-button" onclick="startGame()">Start</button>
-        <button id="leaderboard-button" onclick="showLeaderboard()">Leaderboard</button>
     </div>
 
     <!-- Game Container -->
@@ -267,7 +251,7 @@
             `;
         }
 
-        // Show Leaderboard
+        // Show Leaderboard with top 5 users
         function showLeaderboard() {
             const scores = JSON.parse(localStorage.getItem("heimdogeScores")) || [];
             const userScores = scores.reduce((acc, entry) => {
@@ -286,7 +270,7 @@
             leaderboard.sort((a, b) => b.score - a.score); // Sort by score, descending
 
             let leaderboardHtml = "<div id='leaderboard'><h3>Leaderboard</h3>";
-            leaderboard.slice(0, 3).forEach((entry, index) => {
+            leaderboard.slice(0, 5).forEach((entry, index) => {
                 leaderboardHtml += `
                     <div class="leaderboard-entry">
                         <span class="username">${entry.username}</span>
