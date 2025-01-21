@@ -19,7 +19,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background: url('2.jpg') no-repeat center center/cover;
+            background: url('splash-image.jpg') no-repeat center center/cover;
         }
         #start-button {
             padding: 15px 30px;
@@ -97,7 +97,7 @@
         // Spawn a HeimDoge at a random position
         function spawnHeimdoge(container) {
             const heimdoge = document.createElement('img');
-            heimdoge.src = '4.png'; // Replace with your HeimDoge image URL
+            heimdoge.src = 'heimdoge.png'; // Replace with your HeimDoge image URL
             heimdoge.className = 'heimdoge';
 
             // Random position within the container
@@ -116,17 +116,17 @@
             // Append to container
             container.appendChild(heimdoge);
 
-            // Remove after a certain time
+            // Remove after 700ms (time for the user to click)
             setTimeout(() => {
                 if (heimdoge.parentElement) {
                     heimdoge.remove();
                 }
-            }, 300);
+            }, 700);
         }
 
         // Start spawning HeimDoges
         function startSpawning(container) {
-            gameInterval = setInterval(() => spawnHeimdoge(container), 1000);
+            gameInterval = setInterval(() => spawnHeimdoge(container), 300);
         }
 
         // Start the game timer
