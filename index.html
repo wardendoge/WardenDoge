@@ -146,9 +146,16 @@
         function endGame() {
             clearInterval(gameInterval);
             clearInterval(timerInterval);
+
+            // Get current date and time in TR time zone
+            const now = new Date();
+            const options = { timeZone: "Europe/Istanbul", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", second: "2-digit" };
+            const formattedDate = new Intl.DateTimeFormat("tr-TR", options).format(now);
+
             document.getElementById('game-container').innerHTML = `
                 <h1 style="text-align: center; margin-top: 20vh;">Game Over!</h1>
                 <h2 style="text-align: center;">Final Score: ${score}</h2>
+                <h3 style="text-align: center; color: gray;">Date: ${formattedDate}</h3>
                 <button style="
                     display: block; 
                     margin: 20px auto; 
