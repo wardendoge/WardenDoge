@@ -46,9 +46,8 @@
             width: 50px;
             height: 50px;
             position: absolute;
-            background: url('3.png') no-repeat center center / contain;
+            background: url('4.png') no-repeat center center / contain;
             cursor: pointer;
-            animation: fall linear;
         }
         #score-display {
             position: fixed;
@@ -101,7 +100,7 @@
 
     <script>
         let score = 0;
-        let gameInterval, dogeInterval;
+        let gameInterval, dogeTimeout;
         const gameDuration = 30000; // 30 seconds
 
         // Start the game
@@ -110,45 +109,43 @@
             document.getElementById('game-screen').style.display = 'block';
             score = 0;
             document.getElementById('score-display').textContent = `Score: ${score}`;
-            startFallingDoges();
+            generateDoges();
             setTimeout(endGame, gameDuration);
         }
 
-        // Create falling HeimDoge elements
-        function startFallingDoges() {
-            dogeInterval = setInterval(() => {
+        // Generate HeimDoge elements randomly on the screen
+        function generateDoges() {
+            gameInterval = setInterval(() => {
                 const doge = document.createElement('div');
                 doge.className = 'doge';
                 doge.style.left = Math.random() * (window.innerWidth - 50) + 'px';
-                doge.style.animationDuration = Math.random() * 2 + 2 + 's';
+                doge.style.top = Math.random() * (window.innerHeight - 50) + 'px';
                 doge.onclick = () => {
                     score++;
                     document.getElementById('score-display').textContent = `Score: ${score}`;
                     doge.remove();
                 };
-                doge.onanimationend = () => doge.remove();
                 document.getElementById('game-screen').appendChild(doge);
-            }, 800);
+
+                // Remove the HeimDoge after 100ms
+                dogeTimeout = setTimeout(() => {
+                    doge.remove();
+                }, 100);
+            }, 500); // New HeimDoge every 500ms
         }
 
         // End the game
         function endGame() {
-            clearInterval(dogeInterval);
+            clearInterval(gameInterval);
+            clearTimeout(dogeTimeout);
             document.getElementById('game-over').style.display = 'block';
             document.getElementById('final-score').textContent = score;
+            document.querySelectorAll('.doge').forEach(doge => doge.remove());
         }
 
         // Restart the game
         function restartGame() {
             document.getElementById('game-over').style.display = 'none';
-            document.getElementById('game-screen').innerHTML = `
-                <div id="score-display">Score: 0</div>
-                <div id="game-over">
-                    <h1>Game Over!</h1>
-                    <p>Your score: <span id="final-score">0</span></p>
-                    <button onclick="restartGame()">Play Again</button>
-                </div>
-            `;
             startGame();
         }
     </script>
