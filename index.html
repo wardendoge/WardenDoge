@@ -94,6 +94,7 @@
             text-align: center;
             font-size: 24px;
             color: black;
+            display: none; /* Default olarak gizli */
         }
         #leaderboard {
             padding: 20px;
@@ -255,11 +256,13 @@
                 <h2>Game Over!</h2>
                 <p>Score: ${score}</p>
                 <button onclick="showLeaderboard()">Show Leaderboard</button>
+                <button onclick="restartGame()">Play Again</button>
             `;
+            document.getElementById('game-over-screen').style.display = 'block'; // Make the game over screen visible
         }
 
         // Show Leaderboard
-        function showLeaderboard() {
+        window.showLeaderboard = function() { // Make showLeaderboard globally accessible
             const leaderboardRef = ref(db, 'leaderboard/');
             get(leaderboardRef).then(snapshot => {
                 if (snapshot.exists()) {
@@ -283,8 +286,9 @@
                         `;
                     });
 
-                    leaderboardHtml += `<button onclick="restartGame()">Play Again</button></div>`;
+                    leaderboardHtml += "<button onclick='restartGame()'>Play Again</button></div>";
                     document.getElementById('game-over-screen').innerHTML = leaderboardHtml;
+                    document.getElementById('game-over-screen').style.display = 'block'; // Make the leaderboard visible
                 } else {
                     console.log("No data found in Firebase.");
                     document.getElementById('game-over-screen').innerHTML = "<h2>No scores available yet!</h2><button onclick='restartGame()'>Play Again</button>";
@@ -295,7 +299,7 @@
         }
 
         // Restart the game (after viewing leaderboard)
-        function restartGame() {
+        window.restartGame = function() {
             document.getElementById('game-over-screen').style.display = 'none'; // Hide game-over screen
             document.getElementById('game-container').style.display = 'none'; // Hide game container
             document.getElementById('splash-screen').style.display = 'block'; // Show username screen
