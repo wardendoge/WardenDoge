@@ -10,8 +10,8 @@
             font-family: 'Montserrat', Arial, sans-serif;
             margin: 0;
             padding: 0;
-            background: #f0f0f0;
-            color: #000;
+            background: #ffeb3b;
+            overflow: hidden;
         }
         #splash-screen {
             width: 100vw;
@@ -19,11 +19,11 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background: url('2.jpg') no-repeat center center / cover;
+            background: url('2.jpg') no-repeat center center/cover;
         }
         #start-button {
             padding: 15px 30px;
-            font-size: 24px;
+            font-size: 20px;
             background: black;
             color: #ffeb3b;
             border: none;
@@ -34,51 +34,29 @@
         #start-button:hover {
             transform: scale(1.1);
         }
-        #game-screen {
-            display: none;
-            position: relative;
+        #game-container {
             width: 100vw;
             height: 100vh;
-            background: #ffeb3b;
+            position: relative;
             overflow: hidden;
         }
-        .doge {
+        .heimdoge {
+            position: absolute;
             width: 50px;
             height: 50px;
-            position: absolute;
-            background: url('4.png') no-repeat center center / contain;
             cursor: pointer;
+            transition: transform 0.2s ease-in-out;
         }
         #score-display {
-            position: fixed;
+            position: absolute;
             top: 10px;
             left: 10px;
             font-size: 24px;
             color: black;
-        }
-        #game-over {
-            display: none;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center;
-        }
-        #game-over h1 {
-            font-size: 36px;
-            margin-bottom: 20px;
-        }
-        #game-over button {
+            background: white;
             padding: 10px 20px;
-            font-size: 18px;
-            background: black;
-            color: #ffeb3b;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-        }
-        #game-over button:hover {
-            transform: scale(1.1);
+            border-radius: 5px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
     </style>
 </head>
@@ -88,65 +66,58 @@
         <button id="start-button" onclick="startGame()">Start</button>
     </div>
 
-    <!-- Game Screen -->
-    <div id="game-screen">
+    <!-- Game Container -->
+    <div id="game-container" style="display:none;">
         <div id="score-display">Score: 0</div>
-        <div id="game-over">
-            <h1>Game Over!</h1>
-            <p>Your score: <span id="final-score">0</span></p>
-            <button onclick="restartGame()">Play Again</button>
-        </div>
     </div>
 
     <script>
+        // Global Variables
         let score = 0;
-        let gameInterval, dogeTimeout;
-        const gameDuration = 30000; // 30 seconds
+        const spawnInterval = 1000; // Time between spawns (milliseconds)
+        const disappearTime = 300; // Time for HeimDoge to disappear (milliseconds)
 
         // Start the game
         function startGame() {
             document.getElementById('splash-screen').style.display = 'none';
-            document.getElementById('game-screen').style.display = 'block';
-            score = 0;
-            document.getElementById('score-display').textContent = `Score: ${score}`;
-            generateDoges();
-            setTimeout(endGame, gameDuration);
+            const gameContainer = document.getElementById('game-container');
+            gameContainer.style.display = 'block';
+            startSpawning(gameContainer);
         }
 
-        // Generate HeimDoge elements randomly on the screen
-        function generateDoges() {
-            gameInterval = setInterval(() => {
-                const doge = document.createElement('div');
-                doge.className = 'doge';
-                doge.style.left = Math.random() * (window.innerWidth - 50) + 'px';
-                doge.style.top = Math.random() * (window.innerHeight - 50) + 'px';
-                doge.onclick = () => {
-                    score++;
-                    document.getElementById('score-display').textContent = `Score: ${score}`;
-                    doge.remove();
-                };
-                document.getElementById('game-screen').appendChild(doge);
+        // Spawn a HeimDoge at a random position
+        function spawnHeimdoge(container) {
+            const heimdoge = document.createElement('img');
+            heimdoge.src = '4.png'; // Replace with your HeimDoge image URL
+            heimdoge.className = 'heimdoge';
 
-                // Remove the HeimDoge after 100ms
-                dogeTimeout = setTimeout(() => {
-                    doge.remove();
-                }, 100);
-            }, 500); // New HeimDoge every 500ms
+            // Random position within the container
+            const x = Math.random() * (container.offsetWidth - 50); // Prevent overflow
+            const y = Math.random() * (container.offsetHeight - 50);
+            heimdoge.style.left = `${x}px`;
+            heimdoge.style.top = `${y}px`;
+
+            // Add click event to increment score
+            heimdoge.onclick = () => {
+                score++;
+                document.getElementById('score-display').textContent = `Score: ${score}`;
+                heimdoge.remove(); // Remove on click
+            };
+
+            // Append to container
+            container.appendChild(heimdoge);
+
+            // Remove after disappearTime
+            setTimeout(() => {
+                if (heimdoge.parentElement) {
+                    heimdoge.remove();
+                }
+            }, disappearTime);
         }
 
-        // End the game
-        function endGame() {
-            clearInterval(gameInterval);
-            clearTimeout(dogeTimeout);
-            document.getElementById('game-over').style.display = 'block';
-            document.getElementById('final-score').textContent = score;
-            document.querySelectorAll('.doge').forEach(doge => doge.remove());
-        }
-
-        // Restart the game
-        function restartGame() {
-            document.getElementById('game-over').style.display = 'none';
-            startGame();
+        // Start spawning HeimDoge
+        function startSpawning(container) {
+            setInterval(() => spawnHeimdoge(container), spawnInterval);
         }
     </script>
 </body>
