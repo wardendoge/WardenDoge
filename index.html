@@ -161,7 +161,7 @@
         let spawnTimer;
 
         // Start the game
-        function startGame() {
+        window.startGame = function() { // Make startGame globally accessible
             // Get username from input field
             username = document.getElementById('username-input').value.trim().toLowerCase();
             if (!username) {
@@ -193,7 +193,7 @@
                     clearInterval(countdownTimer);
                 }
             }, 1000);
-        }
+        };
 
         // Spawn a HeimDoge at a random position
         function spawnHeimdoge(container) {
