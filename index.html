@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Catch the HeimDoge</title>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Montserrat', Arial, sans-serif;
@@ -19,7 +18,7 @@
         }
         #splash-screen {
             width: 300px;
-            height: 300px;
+            height: 350px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -49,6 +48,21 @@
         }
         #start-button:hover {
             transform: scale(1.1);
+        }
+        #leaderboard-button {
+            background: black;
+            color: #ffeb3b;
+            border: none;
+            padding: 20px 50px;
+            cursor: pointer;
+            font-size: 18px;
+            border-radius: 10px;
+            margin-top: 20px;
+            display: block;
+            width: 100%;
+            max-width: 300px;
+            margin-left: auto;
+            margin-right: auto;
         }
         #game-container {
             width: 100vw;
@@ -95,21 +109,6 @@
             font-size: 24px;
             color: black;
         }
-        #leaderboard-button {
-            background: black;
-            color: #ffeb3b;
-            border: none;
-            padding: 20px 50px;
-            cursor: pointer;
-            font-size: 24px;
-            border-radius: 10px;
-            margin-top: 20px;
-            display: block;
-            width: 100%;
-            max-width: 300px;
-            margin-left: auto;
-            margin-right: auto;
-        }
         #leaderboard {
             padding: 20px;
             max-height: 70vh;
@@ -137,6 +136,7 @@
     <div id="splash-screen">
         <input type="text" id="username-input" placeholder="Enter your username" />
         <button id="start-button" onclick="startGame()">Start</button>
+        <button id="leaderboard-button" onclick="showLeaderboard()">Leaderboard</button>
     </div>
 
     <!-- Game Container -->
@@ -286,7 +286,7 @@
             leaderboard.sort((a, b) => b.score - a.score); // Sort by score, descending
 
             let leaderboardHtml = "<div id='leaderboard'><h3>Leaderboard</h3>";
-            leaderboard.forEach((entry, index) => {
+            leaderboard.slice(0, 3).forEach((entry, index) => {
                 leaderboardHtml += `
                     <div class="leaderboard-entry">
                         <span class="username">${entry.username}</span>
