@@ -39,6 +39,7 @@
             height: 100vh;
             position: relative;
             overflow: hidden;
+            display: none;
         }
         .heimdoge {
             position: absolute;
@@ -73,18 +74,32 @@
         #leaderboard-button:hover {
             transform: scale(1.1);
         }
+        #game-over-screen {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            font-size: 24px;
+            color: black;
+        }
     </style>
 </head>
 <body>
-    <!-- Splash Screen -->
+    <!-- Splash Screen (Kullanýcý adý giriþi) -->
     <div id="splash-screen">
-        <button id="start-button" onclick="startGame()">Start</button>
+        <div>
+            <h1>Catch the HeimDoge</h1>
+            <input type="text" id="username-input" placeholder="Enter your username" />
+            <button id="start-button" onclick="startGame()">Start</button>
+        </div>
     </div>
 
     <!-- Game Container -->
-    <div id="game-container" style="display:none;">
+    <div id="game-container">
         <div id="score-display">Score: 0</div>
         <button id="leaderboard-button" onclick="viewLeaderboard()">View Leaderboard</button>
+        <div id="game-over-screen" style="display: none;"></div>
     </div>
 
     <script>
@@ -94,25 +109,43 @@
         const spawnInterval = 300; // Time between spawns (milliseconds)
         const disappearTime = 700; // Time for HeimDoge to disappear (milliseconds)
         const gameDuration = 20000; // Game duration in milliseconds (20 seconds)
-
-        // Ask for username before game starts
-        function askUsername() {
-            username = prompt("Enter your username to start playing:");
-            if (username) {
-                startGame();
-            } else {
-                alert("Username is required to play.");
-                askUsername(); // Re-ask if username is empty
-            }
-        }
+        let gameTimer;
 
         // Start the game
         function startGame() {
+            username = document.getElementById('username-input').value;
+            if (!username) {
+                alert("Username is required!");
+                return;
+            }
+
             document.getElementById('splash-screen').style.display = 'none';
             const gameContainer = document.getElementById('game-container');
             gameContainer.style.display = 'block';
             startSpawning(gameContainer);
-            setTimeout(endGame, gameDuration);
+
+            // Game duration timer
+            gameTimer = setTimeout(endGame, gameDuration);
+
+            // Displaying the game timer
+            const timerDisplay = document.createElement('div');
+            timerDisplay.id = 'timer-display';
+            timerDisplay.style.position = 'absolute';
+            timerDisplay.style.top = '50px';
+            timerDisplay.style.left = '10px';
+            timerDisplay.style.fontSize = '20px';
+            timerDisplay.style.color = 'black';
+            gameContainer.appendChild(timerDisplay);
+
+            let remainingTime = gameDuration / 1000;
+            const countdownTimer = setInterval(() => {
+                remainingTime--;
+                timerDisplay.textContent = `Time: ${remainingTime}s`;
+
+                if (remainingTime <= 0) {
+                    clearInterval(countdownTimer);
+                }
+            }, 1000);
         }
 
         // Spawn a HeimDoge at a random position
@@ -164,9 +197,13 @@
             scores.push(gameData);
             localStorage.setItem("heimdogeScores", JSON.stringify(scores));
 
-            alert(`Game Over! Your Score: ${score}\nDate: ${date}`);
-            document.getElementById('game-container').style.display = 'none';
-            askUsername(); // Ask for a new username if desired
+            document.getElementById('game-over-screen').style.display = 'block';
+            document.getElementById('game-over-screen').innerHTML = `
+                <h2>Game Over!</h2>
+                <p>Your Score: ${score}</p>
+                <p>Date: ${date}</p>
+                <button onclick="restartGame()">Play Again</button>
+            `;
         }
 
         // View Leaderboard
@@ -192,11 +229,9 @@
         // Restart the game (after viewing leaderboard)
         function restartGame() {
             document.getElementById('game-container').style.display = 'none';
-            askUsername();
+            document.getElementById('splash-screen').style.display = 'block';
+            document.getElementById('username-input').value = ''; // Clear username field
         }
-
-        // Initialize the game
-        askUsername();
     </script>
 </body>
 </html>
