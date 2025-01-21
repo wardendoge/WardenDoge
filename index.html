@@ -157,19 +157,33 @@
 
         // Start the game
         function startGame() {
-            username = document.getElementById('username-input').value.trim().toLowerCase();
+            // Check if username exists in localStorage, if so, automatically use it
             if (!username) {
-                alert("Username is required!");
-                return;
+                username = localStorage.getItem('username');
             }
 
-            // Save username to localStorage to keep it for next game
-            localStorage.setItem('username', username);
+            if (!username) {
+                username = document.getElementById('username-input').value.trim().toLowerCase();
+                if (!username) {
+                    alert("Username is required!");
+                    return;
+                }
+                // Save username to localStorage to keep it for next game
+                localStorage.setItem('username', username);
+            }
 
             // Hide splash screen and show game container
             document.getElementById('splash-screen').style.display = 'none';
             const gameContainer = document.getElementById('game-container');
             gameContainer.style.display = 'block';
+
+            // Show score and timer again in case of game restart
+            document.getElementById('score-display').style.display = 'block';
+            document.getElementById('timer-display').style.display = 'block';
+
+            // Reset score for the new game
+            score = 0;
+            document.getElementById('score-display').textContent = `Score: ${score}`;
 
             // Start game
             startSpawning(gameContainer);
@@ -229,7 +243,7 @@
             // Stop spawning HeimDoge after game ends
             clearInterval(spawnTimer);
 
-            // Hide score and timer
+            // Hide score and timer after the game ends
             document.getElementById('score-display').style.display = 'none';
             document.getElementById('timer-display').style.display = 'none';
 
@@ -257,13 +271,18 @@
             const scores = JSON.parse(localStorage.getItem("heimdogeScores")) || [];
             const userScores = scores.reduce((acc, entry) => {
                 const usernameLower = entry.username.toLowerCase();
-                if (!acc[usernameLower] || acc[usernameLower].score < entry.score) {
-                    acc[usernameLower] = entry;
+                if (!acc[usernameLower] || acc[usernameLower] < entry.score) {
+                    acc[usernameLower] = entry.score;
                 }
                 return acc;
             }, {});
 
-            const leaderboard = Object.values(userScores).sort((a, b) => b.score - a.score);
+            const leaderboard = Object.keys(userScores).map(username => ({
+                username,
+                score: userScores[username]
+            }));
+
+            leaderboard.sort((a, b) => b.score - a.score); // Sort by score, descending
 
             let leaderboardHtml = "<div id='leaderboard'><h3>Leaderboard</h3>";
             leaderboard.forEach((entry, index) => {
@@ -275,23 +294,16 @@
                 `;
             });
 
-            leaderboardHtml += `<button onclick="restartGame()">Play Again</button></div>`;
+            leaderboardHtml += `<button id="leaderboard-button" onclick="restartGame()">Play Again</button></div>`;
             document.getElementById('game-over-screen').innerHTML = leaderboardHtml;
         }
 
         // Restart the game (after viewing leaderboard)
         function restartGame() {
-            // Hide previous game elements
-            document.getElementById('game-over-screen').style.display = 'none';
             document.getElementById('game-container').style.display = 'none';
-
-            // Show the splash screen and automatically use saved username
             document.getElementById('splash-screen').style.display = 'block';
-            document.getElementById('username-input').value = localStorage.getItem('username') || ''; // Use saved username
             score = 0; // Reset score
-
-            // Start the game immediately without asking for username
-            startGame();
+            startGame(); // Directly start the game without re-entering username
         }
     </script>
 </body>
