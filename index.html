@@ -2,22 +2,16 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Telegram Web App</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catch the HeimDoge</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body, html {
+        body {
             font-family: 'Montserrat', Arial, sans-serif;
-            width: 100%;
-            height: 100%;
             margin: 0;
             padding: 0;
-            overflow: hidden;
+            background: #f0f0f0;
+            color: #000;
         }
         #splash-screen {
             width: 100vw;
@@ -25,12 +19,12 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background: url('2.jpg') no-repeat center center/cover;
+            background: url('2.jpg') no-repeat center center / cover;
         }
         #start-button {
             padding: 15px 30px;
-            font-size: 20px;
-            background: rgba(0, 0, 0, 0.8);
+            font-size: 24px;
+            background: black;
             color: #ffeb3b;
             border: none;
             border-radius: 10px;
@@ -40,138 +34,122 @@
         #start-button:hover {
             transform: scale(1.1);
         }
-        #home-page, #content {
+        #game-screen {
+            display: none;
+            position: relative;
             width: 100vw;
             height: 100vh;
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
             background: #ffeb3b;
+            overflow: hidden;
         }
-        button {
-            padding: 15px 30px;
-            font-size: 20px;
+        .doge {
+            width: 50px;
+            height: 50px;
+            position: absolute;
+            background: url('3.png') no-repeat center center / contain;
+            cursor: pointer;
+            animation: fall linear;
+        }
+        #score-display {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            font-size: 24px;
+            color: black;
+        }
+        #game-over {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+        #game-over h1 {
+            font-size: 36px;
+            margin-bottom: 20px;
+        }
+        #game-over button {
+            padding: 10px 20px;
+            font-size: 18px;
             background: black;
             color: #ffeb3b;
             border: none;
             border-radius: 10px;
             cursor: pointer;
-            margin: 10px;
-            transition: all 0.3s ease-in-out;
         }
-        button:hover {
+        #game-over button:hover {
             transform: scale(1.1);
-        }
-        ul {
-            list-style: none;
-            padding: 0;
-            margin: 20px auto;
-            max-width: 90%;
-        }
-        li {
-            padding: 15px;
-            background: #fff;
-            margin: 10px 0;
-            border-radius: 10px;
-            display: flex;
-            justify-content: space-between;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            font-size: 18px;
-        }
-        .click-image {
-            width: 60%;
-            max-width: 250px;
-            cursor: pointer;
-            transition: transform 0.2s ease-in-out;
-        }
-        .click-image:active {
-            transform: scale(1.2);
-        }
-        #score-display {
-            font-size: 24px;
-            margin-top: 15px;
         }
     </style>
 </head>
 <body>
     <!-- Splash Screen -->
     <div id="splash-screen">
-        <button id="start-button" onclick="showHome()">Start</button>
+        <button id="start-button" onclick="startGame()">Start</button>
     </div>
 
-    <!-- Home Page -->
-    <div id="home-page">
-        <h1>Welcome, <span id="username">User</span>!</h1>
-        <button onclick="showPage('game')">Game</button>
-        <button onclick="showPage('leaderboard')">Leaderboard</button>
+    <!-- Game Screen -->
+    <div id="game-screen">
+        <div id="score-display">Score: 0</div>
+        <div id="game-over">
+            <h1>Game Over!</h1>
+            <p>Your score: <span id="final-score">0</span></p>
+            <button onclick="restartGame()">Play Again</button>
+        </div>
     </div>
-
-    <!-- Dynamic Content -->
-    <div id="content"></div>
 
     <script>
         let score = 0;
-        const leaderboardData = [
-            { username: 'Player1', score: 120 },
-            { username: 'Player2', score: 100 },
-            { username: 'Player3', score: 80 },
-        ];
-        let user = {};
+        let gameInterval, dogeInterval;
+        const gameDuration = 30000; // 30 seconds
 
-        // Telegram WebApp Initialization
-        window.onload = function () {
-            if (window.Telegram.WebApp) {
-                Telegram.WebApp.ready();
-                user = Telegram.WebApp.initDataUnsafe.user || {};
-                document.getElementById('username').textContent = user.first_name || 'User';
-            }
-        };
-
-        // Show Home Page
-        function showHome() {
+        // Start the game
+        function startGame() {
             document.getElementById('splash-screen').style.display = 'none';
-            document.getElementById('content').style.display = 'none';
-            document.getElementById('home-page').style.display = 'flex';
-        }
-
-        // Show Game or Leaderboard Page
-        function showPage(page) {
-            document.getElementById('home-page').style.display = 'none';
-            const content = document.getElementById('content');
-            content.style.display = 'flex';
-            content.innerHTML = '';
-
-            if (page === 'game') {
-                content.innerHTML = `
-                    <div>
-                        <img src="3.png" alt="Click Me" class="click-image" onclick="earnPoints()">
-                        <p id="score-display">Score: ${score}</p>
-                        <button onclick="showHome()">Back to Home</button>
-                    </div>
-                `;
-            } else if (page === 'leaderboard') {
-                const leaderboardHTML = leaderboardData
-                    .map((player, index) => {
-                        const medal = index === 0 ? '??' : index === 1 ? '??' : index === 2 ? '??' : '';
-                        return `<li>
-                                    <span>${medal} ${player.username}</span>
-                                    <span>${player.score} Points</span>
-                                </li>`;
-                    })
-                    .join('');
-                content.innerHTML = `
-                    <h2>Leaderboard</h2>
-                    <ul>${leaderboardHTML}</ul>
-                    <button onclick="showHome()">Back to Home</button>
-                `;
-            }
-        }
-
-        // Earn Points in the Game
-        function earnPoints() {
-            score += 1;
+            document.getElementById('game-screen').style.display = 'block';
+            score = 0;
             document.getElementById('score-display').textContent = `Score: ${score}`;
+            startFallingDoges();
+            setTimeout(endGame, gameDuration);
+        }
+
+        // Create falling HeimDoge elements
+        function startFallingDoges() {
+            dogeInterval = setInterval(() => {
+                const doge = document.createElement('div');
+                doge.className = 'doge';
+                doge.style.left = Math.random() * (window.innerWidth - 50) + 'px';
+                doge.style.animationDuration = Math.random() * 2 + 2 + 's';
+                doge.onclick = () => {
+                    score++;
+                    document.getElementById('score-display').textContent = `Score: ${score}`;
+                    doge.remove();
+                };
+                doge.onanimationend = () => doge.remove();
+                document.getElementById('game-screen').appendChild(doge);
+            }, 800);
+        }
+
+        // End the game
+        function endGame() {
+            clearInterval(dogeInterval);
+            document.getElementById('game-over').style.display = 'block';
+            document.getElementById('final-score').textContent = score;
+        }
+
+        // Restart the game
+        function restartGame() {
+            document.getElementById('game-over').style.display = 'none';
+            document.getElementById('game-screen').innerHTML = `
+                <div id="score-display">Score: 0</div>
+                <div id="game-over">
+                    <h1>Game Over!</h1>
+                    <p>Your score: <span id="final-score">0</span></p>
+                    <button onclick="restartGame()">Play Again</button>
+                </div>
+            `;
+            startGame();
         }
     </script>
 </body>
