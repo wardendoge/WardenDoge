@@ -260,6 +260,9 @@
 
         // Show Leaderboard (Baþlangýç ekranýnda gösterilecek)
         window.showLeaderboard = function() {
+            document.getElementById('splash-screen').style.display = 'none';
+            document.getElementById('game-container').style.display = 'none';
+
             const leaderboardRef = ref(db, 'leaderboard/');
             get(leaderboardRef).then(snapshot => {
                 if (snapshot.exists()) {
@@ -312,7 +315,6 @@
             document.getElementById('game-container').style.display = 'none'; // Hide game container
             document.getElementById('splash-screen').style.display = 'block'; // Show username screen
             score = 0; // Reset score
-            startGame(); // Directly start the game without re-entering username
         }
     </script>
 </body>
