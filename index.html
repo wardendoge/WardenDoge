@@ -122,7 +122,7 @@
     <!-- Splash Screen (Kullanýcý adý giriþi) -->
     <div id="splash-screen">
         <input type="text" id="username-input" placeholder="Enter your username" />
-        <button id="start-button" onclick="startGame()">Start</button>
+        <button id="start-button">Start</button>
     </div>
 
     <!-- Game Container -->
@@ -133,11 +133,11 @@
     </div>
 
     <script type="module">
-        // Import Firebase
+        // Firebase Importlarý
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
         import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
 
-        // Firebase configuration
+        // Firebase yapýlandýrmasý
         const firebaseConfig = {
             apiKey: "AIzaSyAU5gMvjzUp3sXMeaNXY4jzxKEacitwcC8",
             authDomain: "heimdogeapp.firebaseapp.com",
@@ -148,43 +148,43 @@
             appId: "1:960562169006:web:68014c8899636b7253d93f"
         };
 
-        // Initialize Firebase
+        // Firebase'i baþlat
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // Global Variables
+        // Global Deðiþkenler
         let score = 0;
         let username = '';
-        const spawnInterval = 300; // Time between spawns (milliseconds)
-        const disappearTime = 700; // Time for HeimDoge to disappear (milliseconds)
-        const gameDuration = 20000; // Game duration in milliseconds (20 seconds)
+        const spawnInterval = 300; // Spawning süresi (ms)
+        const disappearTime = 700; // HeimDoge'nin kaybolma süresi (ms)
+        const gameDuration = 20000; // Oyun süresi (ms, 20 saniye)
         let gameTimer;
         let spawnTimer;
 
-        // Start the game
-        window.startGame = function() { // Make startGame globally accessible
-            // Get username from input field
+        // Oyun Baþlatma
+        function startGame() {
+            // Kullanýcý adýný al
             username = document.getElementById('username-input').value.trim().toLowerCase();
             if (!username) {
                 alert("Username is required!");
                 return;
             }
 
-            // Hide splash screen and show game container
+            // Splash ekranýný gizle ve oyun alanýný göster
             document.getElementById('splash-screen').style.display = 'none';
             document.getElementById('game-container').style.display = 'block';
 
-            // Reset score for the new game
+            // Puaný sýfýrla
             score = 0;
             document.getElementById('score-display').textContent = `Score: ${score}`;
 
-            // Start spawning HeimDoge
+            // HeimDoge'yi spawn etmeye baþla
             startSpawning(document.getElementById('game-container'));
 
-            // Start game timer
+            // Oyun zamanlayýcýsýný baþlat
             gameTimer = setTimeout(endGame, gameDuration);
 
-            // Start countdown timer display
+            // Zaman sayacýný baþlat
             let remainingTime = gameDuration / 1000;
             const countdownTimer = setInterval(() => {
                 remainingTime--;
@@ -194,31 +194,31 @@
                     clearInterval(countdownTimer);
                 }
             }, 1000);
-        };
+        }
 
-        // Spawn a HeimDoge at a random position
+        // HeimDoge'i rastgele bir konumda spawn et
         function spawnHeimdoge(container) {
             const heimdoge = document.createElement('img');
-            heimdoge.src = '4.png'; // Replace with your HeimDoge image URL
+            heimdoge.src = '4.png'; // HeimDoge resmi
             heimdoge.className = 'heimdoge';
 
-            // Random position within the container
-            const x = Math.random() * (container.offsetWidth - 50); // Prevent overflow
+            // Konum rastgele olarak ayarlanýr
+            const x = Math.random() * (container.offsetWidth - 50);
             const y = Math.random() * (container.offsetHeight - 50);
             heimdoge.style.left = `${x}px`;
             heimdoge.style.top = `${y}px`;
 
-            // Add click event to increment score
+            // Týklanarak puan arttýrma
             heimdoge.onclick = () => {
                 score++;
                 document.getElementById('score-display').textContent = `Score: ${score}`;
-                heimdoge.remove(); // Remove on click
+                heimdoge.remove(); // Týklandýðýnda kaldýr
             };
 
-            // Append to container
+            // Container'a ekle
             container.appendChild(heimdoge);
 
-            // Remove after disappearTime
+            // Zamanla kaybolmasýný saðla
             setTimeout(() => {
                 if (heimdoge.parentElement) {
                     heimdoge.remove();
@@ -226,6 +226,105 @@
             }, disappearTime);
         }
 
-        // Start spawning HeimDoge
+        // HeimDoge'leri spawn etmeye baþla
         function startSpawning(container) {
-            spawnTimer = setInterval(() => spawnHeimdoge(container), spawnInt
+            spawnTimer = setInterval(() => spawnHeimdoge(container), spawnInterval);
+        }
+
+        // Oyun bitiþi ve puan kaydetme
+        function endGame() {
+            // Spawn iþlemini durdur
+            clearInterval(spawnTimer);
+
+            // Skor ve zaman sayacýný gizle
+            document.getElementById('score-display').style.display = 'none';
+            document.getElementById('timer-display').style.display = 'none';
+
+            const gameData = {
+                username,
+                score
+            };
+
+            // Firebase'e puan kaydet
+            const leaderboardRef = ref(db, 'leaderboard/' + Date.now());
+            set(leaderboardRef, gameData).catch(error => {
+                console.error("Error saving score to Firebase: ", error);
+            });
+
+            // Oyun bitiþ ekranýný göster
+            document.getElementById('game-over-screen').innerHTML = ` 
+                <h2>Game Over!</h2> 
+                <p>Score: ${score}</p>
+                <button onclick="showLeaderboard()">Show Leaderboard</button>
+                <button onclick="restartGame()">Play Again</button>
+            `;
+            document.getElementById('game-over-screen').style.display = 'block'; // Oyun bitiþ ekranýný göster
+        }
+
+        // Liderlik tablosunu göster
+        function showLeaderboard() {
+            const leaderboardRef = ref(db, 'leaderboard/');
+            get(leaderboardRef).then(snapshot => {
+                if (snapshot.exists()) {
+                    const data = snapshot.val();
+                    console.log("Leaderboard Data: ", data);
+
+                    const scores = Object.values(data).map(entry => ({
+                        username: entry.username,
+                        score: entry.score
+                    }));
+
+                    // Duplicate kullanýcýlarý kaldýr ve en yüksek puaný sakla
+                    const uniqueScores = [];
+                    const usernameMap = {};
+
+                    scores.forEach(entry => {
+                        if (!usernameMap[entry.username] || usernameMap[entry.username] < entry.score) {
+                            usernameMap[entry.username] = entry.score;
+                        }
+                    });
+
+                    // usernameMap'i tekrar diziye çevir
+                    Object.keys(usernameMap).forEach(username => {
+                        uniqueScores.push({ username, score: usernameMap[username] });
+                    });
+
+                    // Puanlara göre sýrala
+                    uniqueScores.sort((a, b) => b.score - a.score);
+
+                    let leaderboardHtml = "<div id='leaderboard'><h3>Leaderboard</h3>";
+                    uniqueScores.slice(0, 10).forEach(entry => {
+                        leaderboardHtml += `
+                            <div class="leaderboard-entry">
+                                <span class="username">${entry.username}</span>
+                                <span class="score">${entry.score}</span>
+                            </div>
+                        `;
+                    });
+
+                    leaderboardHtml += "<button onclick='restartGame()'>Play Again</button></div>";
+                    document.getElementById('game-over-screen').innerHTML = leaderboardHtml;
+                    document.getElementById('game-over-screen').style.display = 'block'; // Liderlik tablosunu göster
+                } else {
+                    console.log("No data found in Firebase.");
+                    document.getElementById('game-over-screen').innerHTML = "<h2>No scores available yet!</h2><button onclick='restartGame()'>Play Again</button>";
+                }
+            }).catch(error => {
+                console.error("Error fetching leaderboard data: ", error);
+            });
+        }
+
+        // Oyunu yeniden baþlat
+        function restartGame() {
+            document.getElementById('game-over-screen').style.display = 'none';
+            document.getElementById('game-container').style.display = 'none';
+            document.getElementById('splash-screen').style.display = 'block';
+            score = 0;
+            startGame();
+        }
+
+        // Baþlangýç butonuna týklandýðýnda startGame() fonksiyonunu çaðýr
+        document.getElementById('start-button').addEventListener('click', startGame);
+    </script>
+</body>
+</html>
