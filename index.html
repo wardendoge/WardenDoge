@@ -225,14 +225,11 @@
                 <h2>Game Over!</h2>
                 <p>Score: ${score}</p>
                 <button id="show-leaderboard-button">Show Leaderboard</button>
-                <button id="play-again-button">Play Again</button>
             `;
             document.getElementById('game-over-screen').style.display = 'block';
 
             // Button click event for leaderboard
             document.getElementById('show-leaderboard-button').addEventListener('click', showLeaderboard);
-            // Button click event for restarting game
-            document.getElementById('play-again-button').addEventListener('click', restartGame);
         }
 
         function showLeaderboard() {
@@ -270,20 +267,13 @@
                         `;
                     });
 
-                    leaderboardHtml += "<button onclick='restartGame()'>Play Again</button></div>";
+                    leaderboardHtml += "</div>";
                     document.getElementById('game-over-screen').innerHTML = leaderboardHtml;
                     document.getElementById('game-over-screen').style.display = 'block';
                 } else {
-                    document.getElementById('game-over-screen').innerHTML = "<h2>No scores available yet!</h2><button onclick='restartGame()'>Play Again</button>";
+                    document.getElementById('game-over-screen').innerHTML = "<h2>No scores available yet!</h2>";
                 }
             });
-        }
-
-        function restartGame() {
-            document.getElementById('game-over-screen').style.display = 'none';
-            document.getElementById('game-container').style.display = 'none';
-            document.getElementById('splash-screen').style.display = 'block';
-            score = 0;
         }
 
         document.getElementById('start-button').addEventListener('click', startGame);
