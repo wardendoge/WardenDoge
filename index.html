@@ -37,7 +37,7 @@
             border: 2px solid #ccc;
             border-radius: 10px;
         }
-        #start-button, #leaderboard-button {
+        #start-button {
             padding: 15px 30px;
             font-size: 20px;
             background: black;
@@ -46,9 +46,8 @@
             border-radius: 10px;
             cursor: pointer;
             transition: all 0.3s ease-in-out;
-            margin-top: 10px;
         }
-        #start-button:hover, #leaderboard-button:hover {
+        #start-button:hover {
             transform: scale(1.1);
         }
         #game-container {
@@ -65,8 +64,10 @@
             cursor: pointer;
             transition: transform 0.2s ease-in-out;
         }
-        #score-display, #timer-display {
+        #score-display {
             position: absolute;
+            top: 10px;
+            left: 10px;
             font-size: 24px;
             color: black;
             background: white;
@@ -74,13 +75,16 @@
             border-radius: 5px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
-        #score-display {
-            top: 10px;
-            left: 10px;
-        }
         #timer-display {
+            position: absolute;
             top: 10px;
             right: 10px;
+            font-size: 24px;
+            color: black;
+            background: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
         #game-over-screen {
             position: absolute;
@@ -90,7 +94,7 @@
             text-align: center;
             font-size: 24px;
             color: black;
-            display: none;
+            display: none; /* Default olarak gizli */
         }
         #leaderboard {
             padding: 20px;
@@ -119,7 +123,7 @@
     <div id="splash-screen">
         <input type="text" id="username-input" placeholder="Enter your username" />
         <button id="start-button" onclick="startGame()">Start</button>
-        <button id="leaderboard-button" onclick="showLeaderboard()">Leaderboard</button> <!-- Yeni buton -->
+        <button onclick="showLeaderboard()">Leaderboard</button>
     </div>
 
     <!-- Game Container -->
@@ -159,8 +163,7 @@
         let spawnTimer;
 
         // Start the game
-        window.startGame = function() { // Make startGame globally accessible
-            // Get username from input field
+        window.startGame = function() { 
             username = document.getElementById('username-input').value.trim().toLowerCase();
             if (!username) {
                 alert("Username is required!");
@@ -199,23 +202,19 @@
             heimdoge.src = '4.png'; // Replace with your HeimDoge image URL
             heimdoge.className = 'heimdoge';
 
-            // Random position within the container
             const x = Math.random() * (container.offsetWidth - 50); // Prevent overflow
             const y = Math.random() * (container.offsetHeight - 50);
             heimdoge.style.left = `${x}px`;
             heimdoge.style.top = `${y}px`;
 
-            // Add click event to increment score
             heimdoge.onclick = () => {
                 score++;
                 document.getElementById('score-display').textContent = `Score: ${score}`;
                 heimdoge.remove(); // Remove on click
             };
 
-            // Append to container
             container.appendChild(heimdoge);
 
-            // Remove after disappearTime
             setTimeout(() => {
                 if (heimdoge.parentElement) {
                     heimdoge.remove();
@@ -230,7 +229,6 @@
 
         // End the game and save the score
         function endGame() {
-            // Stop spawning HeimDoge after game ends
             clearInterval(spawnTimer);
 
             // Hide score and timer after the game ends
@@ -242,52 +240,43 @@
                 score
             };
 
-            // Save score to Firebase
-            const leaderboardRef = ref(db, 'leaderboard/' + Date.now()); // Using timestamp as unique key
+            const leaderboardRef = ref(db, 'leaderboard/' + Date.now());
             set(leaderboardRef, gameData).catch(error => {
                 console.error("Error saving score to Firebase: ", error);
             });
 
-            // Show game over screen
             document.getElementById('game-over-screen').innerHTML = `
                 <h2>Game Over!</h2>
                 <p>Score: ${score}</p>
                 <button onclick="showLeaderboard()">Show Leaderboard</button>
                 <button onclick="restartGame()">Play Again</button>
             `;
-            document.getElementById('game-over-screen').style.display = 'block'; // Make the game over screen visible
+            document.getElementById('game-over-screen').style.display = 'block';
         }
 
-        // Show Leaderboard (Baþlangýç ekranýnda gösterilecek)
         window.showLeaderboard = function() {
-            document.getElementById('splash-screen').style.display = 'none';
-            document.getElementById('game-container').style.display = 'none';
-
             const leaderboardRef = ref(db, 'leaderboard/');
             get(leaderboardRef).then(snapshot => {
                 if (snapshot.exists()) {
                     const data = snapshot.val();
                     console.log("Leaderboard Data: ", data);
 
-                    // Kullanýcý bazýnda en yüksek skoru almak için bir nesne oluþturuyoruz
-                    const highestScores = {};
-
-                    // Verileri iþleyip her kullanýcý için en yüksek skoru alýyoruz
-                    Object.values(data).forEach(entry => {
-                        if (!highestScores[entry.username]) {
-                            highestScores[entry.username] = entry.score;
-                        } else {
-                            if (entry.score > highestScores[entry.username]) {
-                                highestScores[entry.username] = entry.score;
+                    const scores = Object.values(data)
+                        .reduce((acc, entry) => {
+                            const existingEntry = acc.find(item => item.username === entry.username);
+                            if (existingEntry) {
+                                if (existingEntry.score < entry.score) {
+                                    existingEntry.score = entry.score;
+                                }
+                            } else {
+                                acc.push(entry);
                             }
-                        }
-                    });
+                            return acc;
+                        }, [])
+                        .sort((a, b) => b.score - a.score);
 
-                    // En yüksek skorlara göre sýralama
-                    const scores = Object.entries(highestScores).map(([username, score]) => ({ username, score }));
-                    scores.sort((a, b) => b.score - a.score); // Skorlarý azalan sýrayla sýralýyoruz
+                    console.log("Sorted Scores: ", scores);
 
-                    // Ýlk 10 skoru alýyoruz
                     let leaderboardHtml = "<div id='leaderboard'><h3>Leaderboard</h3>";
                     scores.slice(0, 10).forEach(entry => {
                         leaderboardHtml += `
@@ -300,7 +289,7 @@
 
                     leaderboardHtml += "<button onclick='restartGame()'>Play Again</button></div>";
                     document.getElementById('game-over-screen').innerHTML = leaderboardHtml;
-                    document.getElementById('game-over-screen').style.display = 'block'; // Make the leaderboard visible
+                    document.getElementById('game-over-screen').style.display = 'block';
                 } else {
                     console.log("No data found in Firebase.");
                     document.getElementById('game-over-screen').innerHTML = "<h2>No scores available yet!</h2><button onclick='restartGame()'>Play Again</button>";
@@ -310,12 +299,12 @@
             });
         }
 
-        // Restart the game (after viewing leaderboard)
         window.restartGame = function() {
-            document.getElementById('game-over-screen').style.display = 'none'; // Hide game-over screen
-            document.getElementById('game-container').style.display = 'none'; // Hide game container
-            document.getElementById('splash-screen').style.display = 'block'; // Show username screen
-            score = 0; // Reset score
+            document.getElementById('game-over-screen').style.display = 'none';
+            document.getElementById('game-container').style.display = 'none';
+            document.getElementById('splash-screen').style.display = 'block';
+            score = 0;
+            startGame();
         }
     </script>
 </body>
