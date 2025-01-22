@@ -287,8 +287,9 @@
                     const scores = Object.entries(highestScores).map(([username, score]) => ({ username, score }));
                     scores.sort((a, b) => b.score - a.score); // Skorlarý azalan sýrayla sýralýyoruz
 
+                    // Ýlk 10 skoru alýyoruz
                     let leaderboardHtml = "<div id='leaderboard'><h3>Leaderboard</h3>";
-                    scores.slice(0, 5).forEach(entry => {
+                    scores.slice(0, 10).forEach(entry => {
                         leaderboardHtml += `
                             <div class="leaderboard-entry">
                                 <span class="username">${entry.username}</span>
