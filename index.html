@@ -19,7 +19,7 @@
         }
         #splash-screen {
             width: 300px;
-            height: 350px;
+            height: 400px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -27,7 +27,7 @@
             background: url('2.jpg') no-repeat center center/cover;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
             border-radius: 10px;
-            background-size: cover;
+            padding: 20px;
         }
         #username-input {
             padding: 15px;
@@ -37,17 +37,19 @@
             border: 2px solid #ccc;
             border-radius: 10px;
         }
-        #start-button {
+        .button {
             padding: 15px 30px;
             font-size: 20px;
+            margin: 10px 0;
             background: black;
             color: #ffeb3b;
             border: none;
             border-radius: 10px;
             cursor: pointer;
             transition: all 0.3s ease-in-out;
+            text-align: center;
         }
-        #start-button:hover {
+        .button:hover {
             transform: scale(1.1);
         }
         #game-container {
@@ -64,10 +66,9 @@
             cursor: pointer;
             transition: transform 0.2s ease-in-out;
         }
-        #score-display {
+        #score-display, #timer-display {
             position: absolute;
             top: 10px;
-            left: 10px;
             font-size: 24px;
             color: black;
             background: white;
@@ -75,16 +76,11 @@
             border-radius: 5px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
+        #score-display {
+            left: 10px;
+        }
         #timer-display {
-            position: absolute;
-            top: 10px;
             right: 10px;
-            font-size: 24px;
-            color: black;
-            background: white;
-            padding: 10px 20px;
-            border-radius: 5px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
         #game-over-screen {
             position: absolute;
@@ -94,218 +90,135 @@
             text-align: center;
             font-size: 24px;
             color: black;
-            display: none; /* Default olarak gizli */
-        }
-        #leaderboard {
-            padding: 20px;
-            max-height: 70vh;
-            overflow-y: auto;
-            text-align: left;
-            font-size: 18px;
-        }
-        .leaderboard-entry {
-            display: flex;
-            justify-content: space-between;
-            padding: 5px 0;
-        }
-        .username {
-            color: black;
-            font-weight: normal;
-        }
-        .score {
-            color: darkgreen;
-            font-weight: bold;
+            display: none;
         }
     </style>
 </head>
 <body>
-    <!-- Splash Screen (Kullanýcý adý giriþi) -->
+    <!-- Splash Screen -->
     <div id="splash-screen">
         <input type="text" id="username-input" placeholder="Enter your username" />
-        <button id="start-button" onclick="startGame()">Start</button>
+        <button class="button" id="start-button">Start</button>
+        <button class="button" id="leaderboard-button">Leaderboard</button>
     </div>
 
     <!-- Game Container -->
     <div id="game-container">
         <div id="score-display">Score: 0</div>
         <div id="timer-display">Time: 20</div>
-        <div id="game-over-screen" style="display: none;"></div>
+        <div id="game-over-screen"></div>
     </div>
 
     <script type="module">
-        // Import Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
         import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
 
-        // Firebase configuration
         const firebaseConfig = {
-            apiKey: "AIzaSyAU5gMvjzUp3sXMeaNXY4jzxKEacitwcC8",
-            authDomain: "heimdogeapp.firebaseapp.com",
-            databaseURL: "https://heimdogeapp-default-rtdb.europe-west1.firebasedatabase.app",
-            projectId: "heimdogeapp",
-            storageBucket: "heimdogeapp.firebasestorage.app",
-            messagingSenderId: "960562169006",
-            appId: "1:960562169006:web:68014c8899636b7253d93f"
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+            databaseURL: "https://YOUR_PROJECT_ID.firebaseio.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT_ID.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
         };
 
-        // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // Global Variables
         let score = 0;
         let username = '';
-        const spawnInterval = 300; // Time between spawns (milliseconds)
-        const disappearTime = 700; // Time for HeimDoge to disappear (milliseconds)
-        const gameDuration = 20000; // Game duration in milliseconds (20 seconds)
-        let gameTimer;
+        const spawnInterval = 300;
+        const disappearTime = 700;
+        const gameDuration = 20000;
         let spawnTimer;
+        let gameTimer;
 
-        // Start the game
-        window.startGame = function() { // Make startGame globally accessible
-            // Get username from input field
+        document.getElementById('start-button').addEventListener('click', () => {
             username = document.getElementById('username-input').value.trim().toLowerCase();
             if (!username) {
-                alert("Username is required!");
+                alert("Please enter a username!");
                 return;
             }
 
-            // Hide splash screen and show game container
             document.getElementById('splash-screen').style.display = 'none';
             document.getElementById('game-container').style.display = 'block';
 
-            // Reset score for the new game
             score = 0;
             document.getElementById('score-display').textContent = `Score: ${score}`;
-
-            // Start spawning HeimDoge
             startSpawning(document.getElementById('game-container'));
 
-            // Start game timer
-            gameTimer = setTimeout(endGame, gameDuration);
-
-            // Start countdown timer display
             let remainingTime = gameDuration / 1000;
-            const countdownTimer = setInterval(() => {
+            const timerInterval = setInterval(() => {
                 remainingTime--;
                 document.getElementById('timer-display').textContent = `Time: ${remainingTime}s`;
-
-                if (remainingTime <= 0) {
-                    clearInterval(countdownTimer);
-                }
+                if (remainingTime <= 0) clearInterval(timerInterval);
             }, 1000);
-        };
 
-        // Spawn a HeimDoge at a random position
+            gameTimer = setTimeout(endGame, gameDuration);
+        });
+
+        document.getElementById('leaderboard-button').addEventListener('click', showLeaderboard);
+
         function spawnHeimdoge(container) {
             const heimdoge = document.createElement('img');
-            heimdoge.src = '4.png'; // Replace with your HeimDoge image URL
+            heimdoge.src = '4.png';
             heimdoge.className = 'heimdoge';
+            heimdoge.style.left = `${Math.random() * (container.offsetWidth - 50)}px`;
+            heimdoge.style.top = `${Math.random() * (container.offsetHeight - 50)}px`;
 
-            // Random position within the container
-            const x = Math.random() * (container.offsetWidth - 50); // Prevent overflow
-            const y = Math.random() * (container.offsetHeight - 50);
-            heimdoge.style.left = `${x}px`;
-            heimdoge.style.top = `${y}px`;
-
-            // Add click event to increment score
             heimdoge.onclick = () => {
                 score++;
                 document.getElementById('score-display').textContent = `Score: ${score}`;
-                heimdoge.remove(); // Remove on click
+                heimdoge.remove();
             };
 
-            // Append to container
             container.appendChild(heimdoge);
-
-            // Remove after disappearTime
-            setTimeout(() => {
-                if (heimdoge.parentElement) {
-                    heimdoge.remove();
-                }
-            }, disappearTime);
+            setTimeout(() => heimdoge.remove(), disappearTime);
         }
 
-        // Start spawning HeimDoge
         function startSpawning(container) {
             spawnTimer = setInterval(() => spawnHeimdoge(container), spawnInterval);
         }
 
-        // End the game and save the score
         function endGame() {
-            // Stop spawning HeimDoge after game ends
             clearInterval(spawnTimer);
 
-            // Hide score and timer after the game ends
-            document.getElementById('score-display').style.display = 'none';
-            document.getElementById('timer-display').style.display = 'none';
+            const leaderboardRef = ref(db, `leaderboard/${username}`);
+            set(leaderboardRef, { username, score });
 
-            const gameData = {
-                username,
-                score
-            };
-
-            // Save score to Firebase
-            const leaderboardRef = ref(db, 'leaderboard/' + Date.now()); // Using timestamp as unique key
-            set(leaderboardRef, gameData).catch(error => {
-                console.error("Error saving score to Firebase: ", error);
-            });
-
-            // Show game over screen
+            document.getElementById('game-container').style.display = 'none';
+            document.getElementById('game-over-screen').style.display = 'block';
             document.getElementById('game-over-screen').innerHTML = `
-                <h2>Game Over!</h2>
+                <h2>Game Over</h2>
                 <p>Score: ${score}</p>
-                <button onclick="showLeaderboard()">Show Leaderboard</button>
-                <button onclick="restartGame()">Play Again</button>
+                <button class="button" onclick="restartGame()">Play Again</button>
             `;
-            document.getElementById('game-over-screen').style.display = 'block'; // Make the game over screen visible
         }
 
-        // Show Leaderboard
-        window.showLeaderboard = function() { // Make showLeaderboard globally accessible
+        function showLeaderboard() {
             const leaderboardRef = ref(db, 'leaderboard/');
             get(leaderboardRef).then(snapshot => {
                 if (snapshot.exists()) {
-                    const data = snapshot.val();
-                    console.log("Leaderboard Data: ", data);
-
-                    const scores = Object.values(data).map(entry => ({
-                        username: entry.username,
-                        score: entry.score
-                    }));
-
+                    const scores = Object.values(snapshot.val());
                     scores.sort((a, b) => b.score - a.score);
 
-                    let leaderboardHtml = "<div id='leaderboard'><h3>Leaderboard</h3>";
+                    let leaderboardHtml = '<h2>Leaderboard</h2>';
                     scores.slice(0, 5).forEach(entry => {
-                        leaderboardHtml += `
-                            <div class="leaderboard-entry">
-                                <span class="username">${entry.username}</span>
-                                <span class="score">${entry.score}</span>
-                            </div>
-                        `;
+                        leaderboardHtml += `<p>${entry.username}: ${entry.score}</p>`;
                     });
 
-                    leaderboardHtml += "<button onclick='restartGame()'>Play Again</button></div>";
-                    document.getElementById('game-over-screen').innerHTML = leaderboardHtml;
-                    document.getElementById('game-over-screen').style.display = 'block'; // Make the leaderboard visible
-                } else {
-                    console.log("No data found in Firebase.");
-                    document.getElementById('game-over-screen').innerHTML = "<h2>No scores available yet!</h2><button onclick='restartGame()'>Play Again</button>";
+                    document.getElementById('game-over-screen').innerHTML = leaderboardHtml + 
+                        '<button class="button" onclick="restartGame()">Back</button>';
+                    document.getElementById('game-over-screen').style.display = 'block';
                 }
-            }).catch(error => {
-                console.error("Error fetching leaderboard data: ", error);
             });
         }
 
-        // Restart the game (after viewing leaderboard)
-        window.restartGame = function() {
-            document.getElementById('game-over-screen').style.display = 'none'; // Hide game-over screen
-            document.getElementById('game-container').style.display = 'none'; // Hide game container
-            document.getElementById('splash-screen').style.display = 'block'; // Show username screen
-            score = 0; // Reset score
-            startGame(); // Directly start the game without re-entering username
-        }
+        window.restartGame = function () {
+            document.getElementById('game-over-screen').style.display = 'none';
+            document.getElementById('splash-screen').style.display = 'block';
+        };
     </script>
 </body>
 </html>
