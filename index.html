@@ -193,6 +193,7 @@
                 <h2>Game Over</h2>
                 <p>Score: ${score}</p>
                 <button class="button" onclick="restartGame()">Play Again</button>
+                <button class="button" onclick="showLeaderboard()">Leaderboard</button>
             `;
         }
 
@@ -218,6 +219,7 @@
         window.restartGame = function () {
             document.getElementById('game-over-screen').style.display = 'none';
             document.getElementById('splash-screen').style.display = 'block';
+            document.getElementById('username-input').value = ''; // Reset username input
         };
     </script>
 </body>
